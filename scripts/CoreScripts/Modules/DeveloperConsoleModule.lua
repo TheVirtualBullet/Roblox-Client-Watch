@@ -46,10 +46,8 @@ local function checkFFlag(flagName)
 end
 
 local enableActionBindingsTab = checkFFlag("EnableActionBindingsTab")
-local forceDevConsoleInStudio = checkFFlag("ForceDevConsoleInStudio")
-local enableDevConsoleDataStoreStats = checkFFlag("EnableDevConsoleDataStoreStats")
-local enableMemoryTrackerCategoryStats = checkFFlag("EnableMemoryTrackerCategoryStats")
 local improveClientAndServerMemoryTabLayout = checkFFlag("ImproveClientAndServerMemoryTabLayout")
+local disablePassiveClientLogProcessing = checkFFlag("DisablePassiveClientLogProcessing")
 
 -- Eye candy uses RenderStepped
 local EYECANDY_ENABLED = true
@@ -743,6 +741,12 @@ function DeveloperConsole.new(screenGui, permissions, messagesAndStats)
 					body.Size = UDim2_new(1, 0, 0, output.Height)
 					
 					disconnector:connect(outputMessageSync.MessageAdded:connect(function(message)
+                        if disablePassiveClientLogProcessing then
+                            if not devConsole.Visible then
+                                output:SetMessagesDirty(#messages)
+                                return
+                            end
+                        end
 						output:RefreshMessages(#messages)
 					end))
 					
@@ -1071,7 +1075,7 @@ function DeveloperConsole.new(screenGui, permissions, messagesAndStats)
 		end	
 
 		-- Server Memory --
-		if (enableDevConsoleDataStoreStats and permissions.MayViewServerMemory) then
+		if (permissions.MayViewServerMemory) then
 			local tabBody = Primitives.FolderFrame(body, "ServerMemory")
 			
 			local serverTab = nil
@@ -1127,19 +1131,11 @@ function DeveloperConsole.new(screenGui, permissions, messagesAndStats)
 			local statsSyncServer = devConsole.MessagesAndStats.StatsSyncServer
 			statsSyncServer:GetStats()
 			-- Listen to the "new server stats" event.
-			statsSyncServer.StatsReceived:connect(function(stats)					
-				if (enableMemoryTrackerCategoryStats) then 
-					local filteredTreeStats = serverMemoryAnalyzer:filterServerMemoryTreeStats(stats)
-					if filteredTreeStats then
-						serverMemoryAnalyzer:updateWithTreeStats(filteredTreeStats)
-					end
-				else
-					local filteredStats = serverMemoryAnalyzer:DEPRECATED_filterServerMemoryStats(stats)
-					if filteredStats then
-						serverMemoryAnalyzer:DEPRECATED_updateStats(filteredStats)
-					end
-				end
-				
+			statsSyncServer.StatsReceived:connect(function(stats)
+                local filteredTreeStats = serverMemoryAnalyzer:filterServerMemoryTreeStats(stats)
+                if filteredTreeStats then
+                    serverMemoryAnalyzer:updateWithTreeStats(filteredTreeStats)
+                end
 			end)			
 		end
 		  
@@ -2215,6 +2211,8 @@ do
 			Visible = false;
 			Height = 0;
 			HeightChanged = heightChanged;
+            MessagesDirty = false;
+            MessagesDirtyPosition = 1;
 		}
 		
 		local function setHeight(height)
@@ -2336,6 +2334,29 @@ do
 			setHeight(y)
 		end
 		
+        function output.SetMessagesDirty(output, messageStartPosition)
+            if output.MessagesDirty then
+                return
+            end
+            output.MessagesDirty = true
+            output.MessagesDirtyPosition = messageStartPosition
+        end
+		
+        if disablePassiveClientLogProcessing then
+            -- Refresh messages if there are new messages when devConsole is re-opened
+            do
+                devConsole.VisibleChanged:connect(function(visible)
+                    if visible then
+                        if output.MessagesDirty then
+                            output.MessagesDirty = false
+                            output:RefreshMessages(output.MessagesDirtyPosition)
+                        end
+                    end
+                end)
+            end
+		end
+		
+
 		local refreshHandle;
 		function output.RefreshMessages(output, messageStartPosition)
 			if not output.Visible then
@@ -2621,7 +2642,8 @@ end
 function Methods.CreateScrollbar(devConsole, rotation)
 	local scrollbar = {}
 
-	local main = Primitives.FolderFrame(main, 'Scrollbar')
+	local main = nil
+	main = Primitives.FolderFrame(main, 'Scrollbar')
 	scrollbar.Frame = main
 
 	local frame = Primitives.Button(main, 'Frame')
@@ -3045,7 +3067,7 @@ do
 			permissions.ServerCodeExecutionEnabled = permissions.IsCreator and (not settings():GetFFlag("DebugDisableLogServiceExecuteScript"))
 		end)
 		
-		if DEBUG or (forceDevConsoleInStudio and RunService:IsStudio()) then
+		if DEBUG or (RunService:IsStudio()) then
 			permissions.IsCreator = true
 			permissions.ServerCodeExecutionEnabled = true
 		end
@@ -3060,7 +3082,7 @@ do
 
 		permissions.MayViewDataStoreBudget = false
 		pcall(function()
-			permissions.MayViewDataStoreBudget = permissions.IsCreator and settings():GetFFlag("EnableDevConsoleDataStoreStats")
+			permissions.MayViewDataStoreBudget = permissions.IsCreator
 		end)
 		permissions.MayViewHttpResultClient = false
 		pcall(function()

@@ -46,7 +46,7 @@ local FixBadgeTextBeingCutOff = FixBadgeTextBeingCutOffSuccess and FixBadgeTextB
 local getNewNotificationPathSuccess, newNotificationPathValue = pcall(function() return settings():GetFFlag("UseNewNotificationPathLua") end)
 local newNotificationPath = getNewNotificationPathSuccess and newNotificationPathValue
 
-local useNewThumbnailApiSuccess, useNewThumbnailApiValue = pcall(function() return settings():GetFFlag("CoreScriptsUseNewUserThumbnailAPI") end)
+local useNewThumbnailApiSuccess, useNewThumbnailApiValue = pcall(function() return settings():GetFFlag("CoreScriptsUseNewUserThumbnailAPI2") end)
 local useNewUserThumbnailAPI = useNewThumbnailApiSuccess and useNewThumbnailApiValue
 
 --[[ Script Variables ]]--
@@ -983,7 +983,7 @@ if not isTenFootInterface then
 			isPaused = false
 			local utility = require(RobloxGui.Modules.Settings.Utility)
 			local okPressedFunc = function() end
-			utility:ShowAlert("You have no notifications", "Ok", settingsHub, okPressedFunc, true)
+			utility:ShowAlert("You have no notifications", "Ok", --[[settingsHub]] nil, okPressedFunc, true)
 		end
 	end)
 
