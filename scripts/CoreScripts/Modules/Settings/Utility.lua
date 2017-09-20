@@ -52,6 +52,8 @@ end
 local dynamicMovementAndCameraOptions, dynamicMovementAndCameraOptionsSuccess = pcall(function() return settings():GetFFlag("DynamicMovementAndCameraOptions") end)
 dynamicMovementAndCameraOptions = dynamicMovementAndCameraOptions and dynamicMovementAndCameraOptionsSuccess
 
+local success, result = pcall(function() return settings():GetFFlag('UseNotificationsLocalization') end)
+local FFlagUseNotificationsLocalization = success and result
 
 ------------------ VARIABLES --------------------
 local tenFootInterfaceEnabled = require(RobloxGui.Modules:WaitForChild("TenFootInterface")):IsEnabled()
@@ -1121,6 +1123,7 @@ local function CreateSelector(selectionStringTable, startPosition)
 	}
 	autoSelectButton.MouseButton1Click:Connect(function()
 		if not interactable then return end
+		if #this.Selections <= 1 then return end
 		local newIndex = this.CurrentIndex + 1
 		if newIndex > #this.Selections then
 			newIndex = 1
@@ -1204,20 +1207,22 @@ local function CreateSelector(selectionStringTable, startPosition)
 
 	local guiServiceCon = nil
 	local function connectToGuiService()
-		guiServiceCon = GuiService.Changed:Connect(function(prop)
-			if prop == "SelectedCoreObject" then
-				if GuiService.SelectedCoreObject == this.SelectorFrame then
-					this.Selections[this.CurrentIndex].TextTransparency = 0
-				else
-					if GuiService.SelectedCoreObject ~= nil and isAutoSelectButton[GuiService.SelectedCoreObject] then
-						if VRService.VREnabled then
-							this.Selections[this.CurrentIndex].TextTransparency = 0
-						else
-							GuiService.SelectedCoreObject = this.SelectorFrame
-						end
+		guiServiceCon = GuiService:GetPropertyChangedSignal("SelectedCoreObject"):Connect(function()
+			if #this.Selections <= 0 then
+				return
+			end
+
+			if GuiService.SelectedCoreObject == this.SelectorFrame then
+				this.Selections[this.CurrentIndex].TextTransparency = 0
+			else
+				if GuiService.SelectedCoreObject ~= nil and isAutoSelectButton[GuiService.SelectedCoreObject] then
+					if VRService.VREnabled then
+						this.Selections[this.CurrentIndex].TextTransparency = 0
 					else
-						this.Selections[this.CurrentIndex].TextTransparency = 0.5
+						GuiService.SelectedCoreObject = this.SelectorFrame
 					end
+				else
+					this.Selections[this.CurrentIndex].TextTransparency = 0.5
 				end
 			end
 		end)
@@ -1303,6 +1308,10 @@ local function CreateSelector(selectionStringTable, startPosition)
 
 			this.Selections[i] = nextSelection
 		end
+
+		local hasMoreThanOneSelection = #this.Selections > 1
+		leftButton.Visible = hasMoreThanOneSelection
+		rightButton.Visible = hasMoreThanOneSelection
 	end
 
 	--------------------- SETUP -----------------------
@@ -2119,6 +2128,16 @@ local function AddNewRow(pageToAddTo, rowDisplayName, selectionType, rowValues, 
 		ZIndex = 2,
 		Parent = RowFrame
 	};
+	
+	local RowLabelTextSizeConstraint = Instance.new("UITextSizeConstraint")
+	if FFlagUseNotificationsLocalization then
+		RowLabel.Size = UDim2.new(0.35,0,1,0)
+		RowLabel.TextScaled = true
+		RowLabel.TextWrapped = true
+		RowLabelTextSizeConstraint.Parent = RowLabel
+		RowLabelTextSizeConstraint.MaxTextSize = 16
+	end
+	
 	if not isARealRow then
 		RowLabel.Text = ''
 	end
@@ -2129,6 +2148,7 @@ local function AddNewRow(pageToAddTo, rowDisplayName, selectionType, rowValues, 
 		else
 			RowLabel.TextSize = isTenFootInterface() and 36 or 24
 		end
+		RowLabelTextSizeConstraint.MaxTextSize = RowLabel.TextSize
 	end
 	onResized(getViewportSize(), isPortrait())
 	addOnResizedCallback(RowFrame, onResized)
