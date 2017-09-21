@@ -297,9 +297,12 @@ EnableServerHttpAnalytics
 EnableTeamMemberChangeEvent
 EnableTextboxNativeInput
 EnableTrackingAccessoryDestoyedWithLiveSignals
+EnableViveCapTouchInput
 EnableVoiceASR
 EnableVoiceRecording
 EnableVRInputFromHand
+EnableVRServiceGuiInputUserCFrame
+EnableVRServiceTouchpadAPI
 EnableWakingPGSJointsForNonSolverPrimitives
 EnableWeldConstraint2
 EnsafenBuildJointsFromAttachments
@@ -947,6 +950,7 @@ UrlReconstructRejectInvalidSchemes
 UseActivatedEvent
 UseBitCountLimit
 UseContentFolderHumanoidHealthScript
+UseControllerModelsVR
 UseCustomAnimations
 UseDeltaForFBAdorn
 UseDistanceThinning
@@ -997,8 +1001,6 @@ Utf8DotGraphemesEnabled
 ValidateLauncherPercent
 ValidHatsOnly
 VerifyIncomingFriendRequestsBeforeNotifying
-VRPurchasePromptsEnabled
-VRTestControlSchemes
 WaitForChildWarnTimeOutTime
 WaitGetInQueueTime
 WaitToUseCompositeForAccoutrements

@@ -648,7 +648,6 @@ Classes
 	ICreator
 	IDataState
 	IDec
-	ideoCapture
 	IDllStream
 	IDoc
 	IDraw
@@ -1431,6 +1430,7 @@ Enums
 	TouchMovementMode
 	TweenEasingDirection
 	TweenEasingStyle
+	UserCFrame
 	UserInputState
 	UserInputType
 	VerticalAlignment
@@ -1438,5 +1438,6 @@ Enums
 	VideoQuality
 	VisualStyle
 	VisualTrussStyle
+	VRTouchpadMode
 	XAlignment
 	YAlignment

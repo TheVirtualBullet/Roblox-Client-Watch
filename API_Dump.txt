@@ -2659,13 +2659,17 @@ Class UserInputService : Instance [notCreatable]
 	Event UserInputService.WindowFocusReleased()
 	Event UserInputService.WindowFocused()
 Class VRService : Instance
-	Property UserCFrame VRService.GuiInputUserCFrame [RobloxScriptSecurity]
+	Property UserCFrame VRService.GuiInputUserCFrame
+	Property string VRService.VRDeviceName [readonly] [RobloxScriptSecurity]
 	Property bool VRService.VREnabled [readonly]
+	Function VRTouchpadMode VRService:GetTouchpadMode(VRTouchpad pad)
 	Function CoordinateFrame VRService:GetUserCFrame(UserCFrame type)
 	Function bool VRService:GetUserCFrameEnabled(UserCFrame type)
 	Function void VRService:RecenterUserHeadCFrame()
 	Function void VRService:RequestNavigation(CoordinateFrame cframe, UserCFrame inputUserCFrame)
+	Function void VRService:SetTouchpadMode(VRTouchpad pad, VRTouchpadMode mode)
 	Event VRService.NavigationRequested(CoordinateFrame cframe, UserCFrame inputUserCFrame)
+	Event VRService.TouchpadModeChanged(VRTouchpad pad, VRTouchpadMode mode)
 	Event VRService.UserCFrameChanged(UserCFrame type, CoordinateFrame value)
 	Event VRService.UserCFrameEnabled(UserCFrame type, bool enabled)
 Class Vector3Value : Instance
@@ -4004,6 +4008,13 @@ Enum UserInputType
 	EnumItem UserInputType.Gamepad8 : 19
 	EnumItem UserInputType.TextInput : 20
 	EnumItem UserInputType.None : 21
+Enum VRTouchpad
+	EnumItem VRTouchpad.Left : 0
+	EnumItem VRTouchpad.Right : 1
+Enum VRTouchpadMode
+	EnumItem VRTouchpadMode.Touch : 0
+	EnumItem VRTouchpadMode.VirtualThumbstick : 1
+	EnumItem VRTouchpadMode.ABXY : 2
 Enum VerticalAlignment
 	EnumItem VerticalAlignment.Center : 0
 	EnumItem VerticalAlignment.Top : 1
